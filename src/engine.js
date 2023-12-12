@@ -45,3 +45,42 @@ export function getChessBoard() {
     ],
   ];
 }
+
+/**
+ *
+ * @param {string[][]} chessBoard
+ * @param {string} move
+ * @returns { {error?: string, result?: string[][]} }
+ */
+export function whiteMove(chessBoard, move) {
+  if (move.length == 2) {
+    // pawn move
+    let fileIndex = move.charCodeAt(0) - "a".charCodeAt(0);
+    let toRankIndex = move.charCodeAt(1) - "1".charCodeAt(0);
+    let fromRankIndex = chessBoard.findIndex(
+      (rank) => rank[fileIndex] === white.Pawn
+    );
+
+    console.log({
+      toRankIndex,
+      fromRankIndex,
+      fileIndex,
+      diff: toRankIndex - fromRankIndex,
+      a: toRankIndex - fromRankIndex !== 1,
+      b: toRankIndex - fromRankIndex === 2,
+      c: fromRankIndex !== 1,
+      res:
+        toRankIndex - fromRankIndex !== 1 ||
+        (toRankIndex - fromRankIndex === 2 && fromRankIndex !== 1),
+    });
+    if (
+      toRankIndex - fromRankIndex !== 1 &&
+      (toRankIndex - fromRankIndex !== 2 || fromRankIndex !== 1)
+    ) {
+      return { error: "Incorrect pawn move" };
+    }
+    chessBoard[fromRankIndex][fileIndex] = null;
+    chessBoard[toRankIndex][fileIndex] = white.Pawn;
+    return { result: chessBoard };
+  }
+}

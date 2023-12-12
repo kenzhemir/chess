@@ -1,35 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chess</title>
-    <script type="module" src="./src/index.js"></script>
-  </head>
-  <body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess</title>
+  <script type="module" src="./src/index.js"></script>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="display"></div>
+    <form id="move-form">
+      <input name="move" placeholder="Enter move" />
+      <input type="submit" hidden />
+    </form>
+    <br>
     <div id="root"></div>
-    <style>
-      #root {
-        width: max-content;
-        margin: auto;
-      }
-      chess-square {
-        outline: 1px solid #e5e5e5;
-        width: 40px;
-        height: 40px;
-        font-size: 35px;
-        text-align: center;
-        line-height: 40px;
-      }
-      chess-square.dark {
-        background-color: #e5e5e5;
-      }
-      .board-row {
-        display: flex;
-      }
-      .board {
-        display: block;
-      }
-    </style>
-  </body>
+
+  </div>
+  <style>
+    #wrapper {
+      width: max-content;
+      margin: auto;
+    }
+
+    chess-square {
+      outline: 1px solid #e5e5e5;
+      width: 40px;
+      height: 40px;
+      font-size: 35px;
+      text-align: center;
+      line-height: 40px;
+    }
+
+    chess-square.dark {
+      background-color: #e5e5e5;
+    }
+
+    .board-row {
+      display: flex;
+    }
+
+    .board {
+      display: block;
+    }
+  </style>
+</body>
+
 </html>

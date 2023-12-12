@@ -1,4 +1,4 @@
-import { getChessBoard } from "./engine.js";
+import { getChessBoard, whiteMove } from "./engine.js";
 
 import "./chess-elements.js";
 
@@ -18,9 +18,21 @@ function renderChessBoard(root, chessBoard) {
     });
     board.appendChild(rowDiv);
   });
+  root.innerHTML = "";
   root.appendChild(board);
 }
 
 const root = document.getElementById("root");
 const chessBoard = getChessBoard();
 renderChessBoard(root, chessBoard);
+
+document.getElementById("move-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const { error, result } = whiteMove(chessBoard, formData.get("move"));
+  if (error) {
+    document.getElementById("display").innerText += error;
+  } else {
+    renderChessBoard(root, result);
+  }
+});
