@@ -29,7 +29,7 @@ class Square extends HTMLElement {
   }
 
   modifyPiece(piece) {
-    this.#container.innerText = piecesMap[piece] ?? "";
+    this.#container.innerText = piecesMap[piece] ?? piece;
   }
 }
 
