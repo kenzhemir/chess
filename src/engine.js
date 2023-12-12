@@ -16,6 +16,11 @@ const white = Object.freeze({
   Pawn: "wP",
 });
 
+const pieces = {
+  black,
+  white,
+};
+
 const empty = "";
 
 export function getChessBoard() {
@@ -67,9 +72,10 @@ const loggingMap = {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
+ * @param {"white" | "black"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-export function whiteMove(chessBoard, move) {
+export function makeMove(chessBoard, move, color) {
   if (move.length == 2) {
     let toFileIndex = move.charCodeAt(0) - "a".charCodeAt(0);
     let toRankIndex = move.charCodeAt(1) - "1".charCodeAt(0);
@@ -80,7 +86,7 @@ export function whiteMove(chessBoard, move) {
         }`,
       };
     }
-    return moveWhitePawn(chessBoard, toRankIndex, toFileIndex);
+    return movePawn(chessBoard, toRankIndex, toFileIndex, color);
   } else if (move.length == 3) {
     let toFileIndex = move.charCodeAt(1) - "a".charCodeAt(0);
     let toRankIndex = move.charCodeAt(2) - "1".charCodeAt(0);
@@ -93,42 +99,45 @@ export function whiteMove(chessBoard, move) {
     }
     switch (move[0]) {
       case "P":
-        return moveWhitePawn(chessBoard, toRankIndex, toFileIndex);
+        return movePawn(chessBoard, toRankIndex, toFileIndex, color);
       case "R":
-        return moveWhiteRook(chessBoard, toRankIndex, toFileIndex);
+        return moveRook(chessBoard, toRankIndex, toFileIndex, color);
       case "N":
-        return moveWhiteKnight(chessBoard, toRankIndex, toFileIndex);
+        return moveKnight(chessBoard, toRankIndex, toFileIndex, color);
       case "B":
-        return moveWhiteBishop(chessBoard, toRankIndex, toFileIndex);
+        return moveBishop(chessBoard, toRankIndex, toFileIndex, color);
       case "K":
-        return moveWhiteKing(chessBoard, toRankIndex, toFileIndex);
+        return moveKing(chessBoard, toRankIndex, toFileIndex, color);
       case "Q":
-        return moveWhiteQueen(chessBoard, toRankIndex, toFileIndex);
+        return moveQueen(chessBoard, toRankIndex, toFileIndex, color);
       default:
         return { error: `unknown piece: ${move[0]}` };
     }
   }
   return { error: "not a valid move" };
 }
+
 /**
  *
  * @param {string[][]} chessBoard
  * @param {string} move
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveWhitePawn(chessBoard, toRankIndex, toFileIndex) {
+function movePawn(chessBoard, toRankIndex, toFileIndex, color) {
+  const sign = color === "white" ? 1 : -1;
+  const pawnRow = color === "white" ? 1 : 6;
   let fromRankIndex = chessBoard.findIndex(
-    (rank) => rank[toFileIndex] === white.Pawn
+    (rank) => rank[toFileIndex] === pieces[color].Pawn
   );
 
   if (
-    toRankIndex - fromRankIndex !== 1 &&
-    (toRankIndex - fromRankIndex !== 2 || fromRankIndex !== 1)
+    toRankIndex - fromRankIndex !== sign &&
+    (toRankIndex - fromRankIndex !== sign * 2 || fromRankIndex !== pawnRow)
   ) {
     return { error: "Incorrect pawn move" };
   }
   chessBoard[fromRankIndex][toFileIndex] = empty;
-  chessBoard[toRankIndex][toFileIndex] = white.Pawn;
+  chessBoard[toRankIndex][toFileIndex] = pieces[color].Pawn;
   return { result: chessBoard };
 }
 
@@ -136,20 +145,21 @@ function moveWhitePawn(chessBoard, toRankIndex, toFileIndex) {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
+ * @param {"white" | "black"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveWhiteRook(chessBoard, toRankIndex, toFileIndex) {
+function moveRook(chessBoard, toRankIndex, toFileIndex, color) {
   let possibleRooks = linearSearch(
     chessBoard,
     toRankIndex,
     toFileIndex,
-    white.Rook
+    pieces[color].Rook
   );
 
   if (possibleRooks.length === 1) {
     const loc = possibleRooks[0];
     chessBoard[loc[0]][loc[1]] = empty;
-    chessBoard[toRankIndex][toFileIndex] = white.Rook;
+    chessBoard[toRankIndex][toFileIndex] = pieces[color].Rook;
     return { result: chessBoard };
   } else if (!possibleRooks.length) {
     return {
@@ -166,9 +176,10 @@ function moveWhiteRook(chessBoard, toRankIndex, toFileIndex) {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
+ * @param {"white" | "black"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveWhiteKnight(chessBoard, toRankIndex, toFileIndex) {
+function moveKnight(chessBoard, toRankIndex, toFileIndex, color) {
   function getPossibleKnightMoves(i, j) {
     return [
       [i - 2, j - 1],
@@ -184,13 +195,13 @@ function moveWhiteKnight(chessBoard, toRankIndex, toFileIndex) {
 
   let knightMoves = getPossibleKnightMoves(toRankIndex, toFileIndex);
   let possibleKnights = knightMoves.filter(
-    ([i, j]) => chessBoard[i][j] === white.Knight
+    ([i, j]) => chessBoard[i][j] === pieces[color].Knight
   );
 
   if (possibleKnights.length === 1) {
     const loc = possibleKnights[0];
     chessBoard[loc[0]][loc[1]] = empty;
-    chessBoard[toRankIndex][toFileIndex] = white.Knight;
+    chessBoard[toRankIndex][toFileIndex] = pieces[color].Knight;
     return { result: chessBoard };
   } else if (!possibleKnights.length) {
     return {
@@ -207,20 +218,21 @@ function moveWhiteKnight(chessBoard, toRankIndex, toFileIndex) {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
+ * @param {"white" | "black"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveWhiteBishop(chessBoard, toRankIndex, toFileIndex) {
+function moveBishop(chessBoard, toRankIndex, toFileIndex, color) {
   let possibleBishops = diagonalSearch(
     chessBoard,
     toRankIndex,
     toFileIndex,
-    white.Bishop
+    pieces[color].Bishop
   );
 
   if (possibleBishops.length === 1) {
     const loc = possibleBishops[0];
     chessBoard[loc[0]][loc[1]] = empty;
-    chessBoard[toRankIndex][toFileIndex] = white.Bishop;
+    chessBoard[toRankIndex][toFileIndex] = pieces[color].Bishop;
     return { result: chessBoard };
   } else if (!possibleBishops.length) {
     return {
@@ -229,6 +241,79 @@ function moveWhiteBishop(chessBoard, toRankIndex, toFileIndex) {
   } else {
     return {
       error: `${possibleBishops.length} bishops can move there`,
+    };
+  }
+}
+
+/**
+ *
+ * @param {string[][]} chessBoard
+ * @param {string} move
+ * @param {"white" | "black"} color
+ * @returns { {error?: string, result?: string[][]} }
+ */
+function moveQueen(chessBoard, toRankIndex, toFileIndex, color) {
+  let possibleQueens = [
+    ...linearSearch(chessBoard, toRankIndex, toFileIndex, pieces[color].Queen),
+    ...diagonalSearch(
+      chessBoard,
+      toRankIndex,
+      toFileIndex,
+      pieces[color].Queen
+    ),
+  ];
+
+  if (possibleQueens.length === 1) {
+    const loc = possibleQueens[0];
+    chessBoard[loc[0]][loc[1]] = empty;
+    chessBoard[toRankIndex][toFileIndex] = pieces[color].Queen;
+    return { result: chessBoard };
+  } else if (!possibleQueens.length) {
+    return {
+      error: `No queen can move there`,
+    };
+  } else {
+    return {
+      error: `${possibleQueens.length} queens can move there`,
+    };
+  }
+}
+
+/**
+ *
+ * @param {string[][]} chessBoard
+ * @param {string} move
+ * @param {"white" | "black"} color
+ * @returns { {error?: string, result?: string[][]} }
+ */
+function moveKing(chessBoard, toRankIndex, toFileIndex, color) {
+  let possibleKingPositions = [
+    [toRankIndex - 1, toFileIndex - 1],
+    [toRankIndex - 1, toFileIndex],
+    [toRankIndex - 1, toFileIndex + 1],
+    [toRankIndex, toFileIndex + 1],
+    [toRankIndex + 1, toFileIndex + 1],
+    [toRankIndex + 1, toFileIndex],
+    [toRankIndex + 1, toFileIndex - 1],
+    [toRankIndex, toFileIndex - 1],
+  ].filter(([rank, file]) => rank >= 0 && rank < 8 && file >= 0 && file < 8);
+
+  const possibleKings = possibleKingPositions.filter(
+    ([rank, file]) => chessBoard[rank][file] === pieces[color].King
+  );
+
+  if (possibleKings.length === 1) {
+    const loc = possibleKings[0];
+    chessBoard[loc[0]][loc[1]] = empty;
+    chessBoard[toRankIndex][toFileIndex] = pieces[color].King;
+    return { result: chessBoard };
+  } else if (!possibleKings.length) {
+    return {
+      error: `No queen can move there`,
+    };
+  } else {
+    return {
+      error: `${possibleKings.length} queens can move there`,
     };
   }
 }
@@ -307,64 +392,4 @@ function diagonalSearch(chessBoard, rank, file, targetPiece) {
     break;
   }
   return possiblePieces;
-}
-
-/**
- *
- * @param {string[][]} chessBoard
- * @param {string} move
- * @returns { {error?: string, result?: string[][]} }
- */
-function moveWhiteQueen(chessBoard, toRankIndex, toFileIndex) {
-  let possibleQueens = [
-    ...linearSearch(chessBoard, toRankIndex, toFileIndex, white.Queen),
-    ...diagonalSearch(chessBoard, toRankIndex, toFileIndex, white.Queen),
-  ];
-
-  if (possibleQueens.length === 1) {
-    const loc = possibleQueens[0];
-    chessBoard[loc[0]][loc[1]] = empty;
-    chessBoard[toRankIndex][toFileIndex] = white.Queen;
-    return { result: chessBoard };
-  } else if (!possibleQueens.length) {
-    return {
-      error: `No queen can move there`,
-    };
-  } else {
-    return {
-      error: `${possibleQueens.length} queens can move there`,
-    };
-  }
-}
-
-function moveWhiteKing(chessBoard, toRankIndex, toFileIndex) {
-  let possibleKingPositions = [
-    [toRankIndex - 1, toFileIndex - 1],
-    [toRankIndex - 1, toFileIndex],
-    [toRankIndex - 1, toFileIndex + 1],
-    [toRankIndex, toFileIndex + 1],
-    [toRankIndex + 1, toFileIndex + 1],
-    [toRankIndex + 1, toFileIndex],
-    [toRankIndex + 1, toFileIndex - 1],
-    [toRankIndex, toFileIndex - 1],
-  ].filter(([rank, file]) => rank >= 0 && rank < 8 && file >= 0 && file < 8);
-
-  const possibleKings = possibleKingPositions.filter(
-    ([rank, file]) => chessBoard[rank][file] === white.King
-  );
-
-  if (possibleKings.length === 1) {
-    const loc = possibleKings[0];
-    chessBoard[loc[0]][loc[1]] = empty;
-    chessBoard[toRankIndex][toFileIndex] = white.King;
-    return { result: chessBoard };
-  } else if (!possibleKings.length) {
-    return {
-      error: `No queen can move there`,
-    };
-  } else {
-    return {
-      error: `${possibleKings.length} queens can move there`,
-    };
-  }
 }
