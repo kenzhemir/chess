@@ -116,7 +116,7 @@ export function whiteMove(chessBoard, move) {
  * @param {string} move
  * @returns { {error?: string, result?: string[][]} }
  */
-export function moveWhitePawn(chessBoard, toRankIndex, toFileIndex) {
+function moveWhitePawn(chessBoard, toRankIndex, toFileIndex) {
   let fromRankIndex = chessBoard.findIndex(
     (rank) => rank[toFileIndex] === white.Pawn
   );
@@ -138,7 +138,7 @@ export function moveWhitePawn(chessBoard, toRankIndex, toFileIndex) {
  * @param {string} move
  * @returns { {error?: string, result?: string[][]} }
  */
-export function moveWhiteRook(chessBoard, toRankIndex, toFileIndex) {
+function moveWhiteRook(chessBoard, toRankIndex, toFileIndex) {
   let possibleRooks = [];
   // rank up
   for (let i = toRankIndex + 1; i < 8; i++) {
@@ -198,7 +198,7 @@ export function moveWhiteRook(chessBoard, toRankIndex, toFileIndex) {
  * @param {string} move
  * @returns { {error?: string, result?: string[][]} }
  */
-export function moveWhiteKnight(chessBoard, toRankIndex, toFileIndex) {
+function moveWhiteKnight(chessBoard, toRankIndex, toFileIndex) {
   function getPossibleKnightMoves(i, j) {
     return [
       [i - 2, j - 1],
@@ -233,3 +233,71 @@ export function moveWhiteKnight(chessBoard, toRankIndex, toFileIndex) {
   }
 }
 
+/**
+ *
+ * @param {string[][]} chessBoard
+ * @param {string} move
+ * @returns { {error?: string, result?: string[][]} }
+ */
+function moveWhiteBishop(chessBoard, toRankIndex, toFileIndex) {
+  let possibleBishops = [];
+
+  for (let i = toRankIndex + 1, j = toFileIndex + 1; i < 8 && j < 8; i++, j++) {
+    const piece = chessBoard[i][j];
+    const location = [i, j];
+    if (piece === empty) continue;
+    if (piece === white.Bishop) possibleBishops.push(location);
+    break;
+  }
+
+  for (
+    let i = toRankIndex + 1, j = toFileIndex - 1;
+    i < 8 && j >= 0;
+    i++, j--
+  ) {
+    const piece = chessBoard[i][j];
+    const location = [i, j];
+    if (piece === empty) continue;
+    if (piece === white.Bishop) possibleBishops.push(location);
+    break;
+  }
+
+  for (
+    let i = toRankIndex - 1, j = toFileIndex + 1;
+    i >= 0 && j < 8;
+    i--, j++
+  ) {
+    const piece = chessBoard[i][j];
+    const location = [i, j];
+    if (piece === empty) continue;
+    if (piece === white.Bishop) possibleBishops.push(location);
+    break;
+  }
+
+  for (
+    let i = toRankIndex - 1, j = toFileIndex - 1;
+    i >= 0 && j >= 0;
+    i--, j--
+  ) {
+    const piece = chessBoard[i][j];
+    const location = [i, j];
+    if (piece === empty) continue;
+    if (piece === white.Bishop) possibleBishops.push(location);
+    break;
+  }
+
+  if (possibleBishops.length === 1) {
+    const loc = possibleBishops[0];
+    chessBoard[loc[0]][loc[1]] = empty;
+    chessBoard[toRankIndex][toFileIndex] = white.Bishop;
+    return { result: chessBoard };
+  } else if (!possibleBishops.length) {
+    return {
+      error: `No bishop can move there`,
+    };
+  } else {
+    return {
+      error: `${possibleBishops.length} bishops can move there`,
+    };
+  }
+}
