@@ -1,160 +1,245 @@
-const black = Object.freeze({
-  King: "bK",
-  Queen: "bQ",
-  Rook: "bR",
-  Bishop: "bB",
-  Knight: "bN",
-  Pawn: "bP",
-});
-
-const white = Object.freeze({
-  King: "wK",
-  Queen: "wQ",
-  Rook: "wR",
-  Bishop: "wB",
-  Knight: "wN",
-  Pawn: "wP",
-});
-
+const white = "w";
+const black = "b";
+const empty = "";
 const pieces = {
-  black,
-  white,
+  [black]: Object.freeze({
+    King: `${black}K`,
+    Queen: `${black}Q`,
+    Rook: `${black}R`,
+    Bishop: `${black}B`,
+    Knight: `${black}N`,
+    Pawn: `${black}P`,
+  }),
+  [white]: Object.freeze({
+    King: `${white}K`,
+    Queen: `${white}Q`,
+    Rook: `${white}R`,
+    Bishop: `${white}B`,
+    Knight: `${white}N`,
+    Pawn: `${white}P`,
+  }),
 };
 
-const empty = "";
-
-export function getChessBoard() {
+export function getStartingChessBoard() {
   return [
     [
-      white.Rook,
-      white.Knight,
-      white.Bishop,
-      white.Queen,
-      white.King,
-      white.Bishop,
-      white.Knight,
-      white.Rook,
+      pieces[white].Rook,
+      pieces[white].Knight,
+      pieces[white].Bishop,
+      pieces[white].Queen,
+      pieces[white].King,
+      pieces[white].Bishop,
+      pieces[white].Knight,
+      pieces[white].Rook,
     ],
-    Array(8).fill(white.Pawn),
+    Array(8).fill(pieces[white].Pawn),
     ...Array(4)
       .fill(0)
       .map(() => Array(8).fill(empty)),
-    Array(8).fill(black.Pawn),
+    Array(8).fill(pieces[black].Pawn),
     [
-      black.Rook,
-      black.Knight,
-      black.Bishop,
-      black.Queen,
-      black.King,
-      black.Bishop,
-      black.Knight,
-      black.Rook,
+      pieces[black].Rook,
+      pieces[black].Knight,
+      pieces[black].Bishop,
+      pieces[black].Queen,
+      pieces[black].King,
+      pieces[black].Bishop,
+      pieces[black].Knight,
+      pieces[black].Rook,
     ],
   ];
 }
 
 const loggingMap = {
-  bP: "♟",
-  bN: "♞",
-  bB: "♝",
-  bR: "♜",
-  bQ: "♛",
-  bK: "♚",
-  wP: "♙",
-  wN: "♘",
-  wB: "♗",
-  wR: "♖",
-  wQ: "♕",
-  wK: "♔",
-  "": "empty",
+  [pieces[black].Pawn]: "♟",
+  [pieces[black].Knight]: "♞",
+  [pieces[black].Bishop]: "♝",
+  [pieces[black].Rook]: "♜",
+  [pieces[black].Queen]: "♛",
+  [pieces[black].King]: "♚",
+  [pieces[white].Pawn]: "♙",
+  [pieces[white].Knight]: "♘",
+  [pieces[white].Bishop]: "♗",
+  [pieces[white].Rook]: "♖",
+  [pieces[white].Queen]: "♕",
+  [pieces[white].King]: "♔",
+  [empty]: "empty",
 };
 /**
  *
  * @param {string[][]} chessBoard
  * @param {string} move
- * @param {"white" | "black"} color
+ * @param {"w" | "b"} color
  * @returns { {error?: string, result?: string[][]} }
  */
 export function makeMove(chessBoard, move, color) {
-  if (move.length == 2) {
-    let toFileIndex = move.charCodeAt(0) - "a".charCodeAt(0);
-    let toRankIndex = move.charCodeAt(1) - "1".charCodeAt(0);
-    if (chessBoard[toRankIndex][toFileIndex] !== "") {
+  const moveInfo = move.match(
+    /^(?<piece>[NBRQK])?(?<from_file>[a-h])?(?<from_rank>[1-8])?(?<capture>x)?(?<to_file>[a-h])(?<to_rank>[1-8])(?<promotion>=[NBRQ])?(?<threat>[+#]?)?$/
+  )?.groups;
+  if (!moveInfo) {
+    return { error: "Invalid move 🤔" };
+  }
+
+  const {
+    piece = "P",
+    from_rank,
+    from_file,
+    to_rank,
+    to_file,
+    capture,
+    promotion,
+    threat,
+  } = moveInfo;
+
+  console.log(moveInfo);
+
+  let toRankIndex = to_rank.charCodeAt(0) - "1".charCodeAt(0);
+  let toFileIndex = to_file.charCodeAt(0) - "a".charCodeAt(0);
+  let destSquare = chessBoard[toRankIndex][toFileIndex];
+
+  if (capture && destSquare === empty) {
+    return { error: "Nothing to capture" };
+  }
+
+  if (destSquare !== empty && destSquare.charAt(0) === color) {
+    return {
+      error: `Location is occupied by ${
+        loggingMap[chessBoard[toRankIndex][toFileIndex]]
+      }${capture ? " (p.s. do not eat your own pieces)" : ""}`,
+    };
+  }
+
+  if (destSquare !== empty && destSquare.charAt(0) !== color) {
+    if (!capture) {
       return {
-        error: `Location is occupied by ${
-          loggingMap[chessBoard[toRankIndex][toFileIndex]]
-        }`,
+        error: `You must specify captures with "x"`,
       };
-    }
-    return movePawn(chessBoard, toRankIndex, toFileIndex, color);
-  } else if (move.length == 3) {
-    let toFileIndex = move.charCodeAt(1) - "a".charCodeAt(0);
-    let toRankIndex = move.charCodeAt(2) - "1".charCodeAt(0);
-    if (chessBoard[toRankIndex][toFileIndex] !== "") {
-      return {
-        error: `Location is occupied by ${
-          loggingMap[chessBoard[toRankIndex][toFileIndex]]
-        }`,
-      };
-    }
-    switch (move[0]) {
-      case "P":
-        return movePawn(chessBoard, toRankIndex, toFileIndex, color);
-      case "R":
-        return moveRook(chessBoard, toRankIndex, toFileIndex, color);
-      case "N":
-        return moveKnight(chessBoard, toRankIndex, toFileIndex, color);
-      case "B":
-        return moveBishop(chessBoard, toRankIndex, toFileIndex, color);
-      case "K":
-        return moveKing(chessBoard, toRankIndex, toFileIndex, color);
-      case "Q":
-        return moveQueen(chessBoard, toRankIndex, toFileIndex, color);
-      default:
-        return { error: `unknown piece: ${move[0]}` };
     }
   }
-  return { error: "not a valid move" };
+
+  let fromRankIndex = from_rank
+    ? from_rank.charCodeAt(0) - "1".charCodeAt(0)
+    : undefined;
+  let fromFileIndex = from_file
+    ? from_file.charCodeAt(0) - "a".charCodeAt(0)
+    : undefined;
+  const moveParams = {
+    toRankIndex,
+    toFileIndex,
+    fromRankIndex,
+    fromFileIndex,
+    color,
+    capture
+  };
+  switch (piece) {
+    case "P":
+      return movePawn(chessBoard, moveParams);
+    case "R":
+      return moveRook(chessBoard, moveParams);
+    case "N":
+      return moveKnight(chessBoard, moveParams);
+    case "B":
+      return moveBishop(chessBoard, moveParams);
+    case "K":
+      return moveKing(chessBoard, moveParams);
+    case "Q":
+      return moveQueen(chessBoard, moveParams);
+    default:
+      return { error: `unknown piece: ${piece}` };
+  }
 }
 
 /**
  *
  * @param {string[][]} chessBoard
  * @param {string} move
+ * @param {"w" | "b"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function movePawn(chessBoard, toRankIndex, toFileIndex, color) {
-  const sign = color === "white" ? 1 : -1;
-  const pawnRow = color === "white" ? 1 : 6;
-  let fromRankIndex = chessBoard.findIndex(
-    (rank) => rank[toFileIndex] === pieces[color].Pawn
+function movePawn(
+  chessBoard,
+  { toRankIndex, toFileIndex, fromRankIndex, fromFileIndex, color, capture }
+) {
+  let possiblePawns = [];
+  const piece = pieces[color].Pawn;
+  if (!capture) {
+    if (color === white) {
+      if (chessBoard[toRankIndex - 1][toFileIndex] === piece) {
+        possiblePawns.push([toRankIndex - 1, toFileIndex]);
+      }
+      if (
+        toRankIndex === 3 &&
+        chessBoard[2][toFileIndex] === empty &&
+        chessBoard[1][toFileIndex] === piece
+      ) {
+        possiblePawns.push([1, toFileIndex]);
+      }
+    } else {
+      if (chessBoard[toRankIndex + 1][toFileIndex] === piece) {
+        possiblePawns.push([toRankIndex + 1, toFileIndex]);
+      }
+      if (
+        toRankIndex === 4 &&
+        chessBoard[5][toFileIndex] === empty &&
+        chessBoard[6][toFileIndex] === piece
+      ) {
+        possiblePawns.push([6, toFileIndex]);
+      }
+    }
+  } else {
+    if (color === white) {
+      if (chessBoard[toRankIndex - 1][toFileIndex - 1] === piece) {
+        possiblePawns.push([toRankIndex - 1, toFileIndex - 1]);
+      }
+      if (chessBoard[toRankIndex - 1][toFileIndex + 1] === piece) {
+        possiblePawns.push([toRankIndex - 1, toFileIndex + 1]);
+      }
+    } else {
+      if (chessBoard[toRankIndex + 1][toFileIndex - 1] === piece) {
+        possiblePawns.push([toRankIndex + 1, toFileIndex - 1]);
+      }
+      if (chessBoard[toRankIndex + 1][toFileIndex + 1] === piece) {
+        possiblePawns.push([toRankIndex + 1, toFileIndex + 1]);
+      }
+    }
+  }
+  possiblePawns = possiblePawns.filter(
+    matchFromLocation.bind(null, { fromRankIndex, fromFileIndex })
   );
 
-  if (
-    toRankIndex - fromRankIndex !== sign &&
-    (toRankIndex - fromRankIndex !== sign * 2 || fromRankIndex !== pawnRow)
-  ) {
-    return { error: "Incorrect pawn move" };
+  if (possiblePawns.length === 1) {
+    const loc = possiblePawns[0];
+    chessBoard[loc[0]][loc[1]] = empty;
+    chessBoard[toRankIndex][toFileIndex] = pieces[color].Pawn;
+    return { result: chessBoard };
+  } else if (!possiblePawns.length) {
+    return {
+      error: `No pawn can move there`,
+    };
+  } else {
+    return {
+      error: `${possiblePawns.length} pawns can move there`,
+    };
   }
-  chessBoard[fromRankIndex][toFileIndex] = empty;
-  chessBoard[toRankIndex][toFileIndex] = pieces[color].Pawn;
-  return { result: chessBoard };
 }
 
 /**
  *
  * @param {string[][]} chessBoard
  * @param {string} move
- * @param {"white" | "black"} color
+ * @param {"w" | "b"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveRook(chessBoard, toRankIndex, toFileIndex, color) {
+function moveRook(
+  chessBoard,
+  { toRankIndex, toFileIndex, fromRankIndex, fromFileIndex, color }
+) {
   let possibleRooks = linearSearch(
     chessBoard,
     toRankIndex,
     toFileIndex,
     pieces[color].Rook
-  );
+  ).filter(matchFromLocation.bind(null, { fromRankIndex, fromFileIndex }));
 
   if (possibleRooks.length === 1) {
     const loc = possibleRooks[0];
@@ -176,10 +261,13 @@ function moveRook(chessBoard, toRankIndex, toFileIndex, color) {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
- * @param {"white" | "black"} color
+ * @param {"w" | "b"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveKnight(chessBoard, toRankIndex, toFileIndex, color) {
+function moveKnight(
+  chessBoard,
+  { toRankIndex, toFileIndex, fromRankIndex, fromFileIndex, color }
+) {
   function getPossibleKnightMoves(i, j) {
     return [
       [i - 2, j - 1],
@@ -194,9 +282,9 @@ function moveKnight(chessBoard, toRankIndex, toFileIndex, color) {
   }
 
   let knightMoves = getPossibleKnightMoves(toRankIndex, toFileIndex);
-  let possibleKnights = knightMoves.filter(
-    ([i, j]) => chessBoard[i][j] === pieces[color].Knight
-  );
+  let possibleKnights = knightMoves
+    .filter(([i, j]) => chessBoard[i][j] === pieces[color].Knight)
+    .filter(matchFromLocation.bind(null, { fromRankIndex, fromFileIndex }));
 
   if (possibleKnights.length === 1) {
     const loc = possibleKnights[0];
@@ -218,16 +306,19 @@ function moveKnight(chessBoard, toRankIndex, toFileIndex, color) {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
- * @param {"white" | "black"} color
+ * @param {"w" | "b"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveBishop(chessBoard, toRankIndex, toFileIndex, color) {
+function moveBishop(
+  chessBoard,
+  { toRankIndex, toFileIndex, fromRankIndex, fromFileIndex, color }
+) {
   let possibleBishops = diagonalSearch(
     chessBoard,
     toRankIndex,
     toFileIndex,
     pieces[color].Bishop
-  );
+  ).filter(matchFromLocation.bind(null, { fromRankIndex, fromFileIndex }));
 
   if (possibleBishops.length === 1) {
     const loc = possibleBishops[0];
@@ -249,10 +340,13 @@ function moveBishop(chessBoard, toRankIndex, toFileIndex, color) {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
- * @param {"white" | "black"} color
+ * @param {"w" | "b"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveQueen(chessBoard, toRankIndex, toFileIndex, color) {
+function moveQueen(
+  chessBoard,
+  { toRankIndex, toFileIndex, fromRankIndex, fromFileIndex, color }
+) {
   let possibleQueens = [
     ...linearSearch(chessBoard, toRankIndex, toFileIndex, pieces[color].Queen),
     ...diagonalSearch(
@@ -261,7 +355,7 @@ function moveQueen(chessBoard, toRankIndex, toFileIndex, color) {
       toFileIndex,
       pieces[color].Queen
     ),
-  ];
+  ].filter(matchFromLocation.bind(null, { fromRankIndex, fromFileIndex }));
 
   if (possibleQueens.length === 1) {
     const loc = possibleQueens[0];
@@ -283,10 +377,13 @@ function moveQueen(chessBoard, toRankIndex, toFileIndex, color) {
  *
  * @param {string[][]} chessBoard
  * @param {string} move
- * @param {"white" | "black"} color
+ * @param {"w" | "b"} color
  * @returns { {error?: string, result?: string[][]} }
  */
-function moveKing(chessBoard, toRankIndex, toFileIndex, color) {
+function moveKing(
+  chessBoard,
+  { toRankIndex, toFileIndex, fromRankIndex, fromFileIndex, color }
+) {
   let possibleKingPositions = [
     [toRankIndex - 1, toFileIndex - 1],
     [toRankIndex - 1, toFileIndex],
@@ -298,9 +395,9 @@ function moveKing(chessBoard, toRankIndex, toFileIndex, color) {
     [toRankIndex, toFileIndex - 1],
   ].filter(([rank, file]) => rank >= 0 && rank < 8 && file >= 0 && file < 8);
 
-  const possibleKings = possibleKingPositions.filter(
-    ([rank, file]) => chessBoard[rank][file] === pieces[color].King
-  );
+  const possibleKings = possibleKingPositions
+    .filter(([rank, file]) => chessBoard[rank][file] === pieces[color].King)
+    .filter(matchFromLocation.bind(null, { fromRankIndex, fromFileIndex }));
 
   if (possibleKings.length === 1) {
     const loc = possibleKings[0];
@@ -392,4 +489,11 @@ function diagonalSearch(chessBoard, rank, file, targetPiece) {
     break;
   }
   return possiblePieces;
+}
+
+function matchFromLocation({ fromRankIndex, fromFileIndex }, [rank, file]) {
+  return (
+    (fromFileIndex === undefined || file === fromFileIndex) &&
+    (fromRankIndex === undefined || fromRankIndex === rank)
+  );
 }

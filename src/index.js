@@ -1,4 +1,4 @@
-import { getChessBoard, makeMove } from "./engine.js";
+import { getStartingChessBoard, makeMove } from "./engine.js";
 
 import "./chess-elements.js";
 
@@ -51,28 +51,28 @@ const labelElement = document.getElementById("move-label");
 const movesForm = document.getElementById("move-form");
 var currentTurn = new Proxy(
   {
-    color: "white",
+    color: "w",
     get isWhite() {
-      return this.color === "white";
+      return this.color === "w";
     },
     next() {
       if (this.isWhite) {
-        this.color = "black";
+        this.color = "b";
       } else {
-        this.color = "white";
+        this.color = "w";
       }
     },
   },
   {
     set(target, prop, value) {
       labelElement.innerText =
-        value === "white" ? "White to move" : "Black to move";
+        value === "w" ? "White to move" : "Black to move";
       return Reflect.set(...arguments);
     },
   }
 );
 
-const chessBoard = getChessBoard();
+const chessBoard = getStartingChessBoard();
 renderChessBoard(root, chessBoard);
 
 movesForm.addEventListener("submit", (e) => {

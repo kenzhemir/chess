@@ -1,24 +1,14 @@
 class Square extends HTMLElement {
   static observedAttributes = ["piece"];
-  #container
+  #container;
 
   constructor() {
-    // Always call super first in constructor
     super();
-    this.#container = document.createElement('div');
+    this.#container = document.createElement("div");
   }
 
   connectedCallback() {
-    console.log("Custom element added to page.");
     this.appendChild(this.#container);
-  }
-
-  disconnectedCallback() {
-    console.log("Custom element removed from page.");
-  }
-
-  adoptedCallback() {
-    console.log("Custom element moved to new page.");
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
