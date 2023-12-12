@@ -336,3 +336,35 @@ function moveWhiteQueen(chessBoard, toRankIndex, toFileIndex) {
     };
   }
 }
+
+function moveWhiteKing(chessBoard, toRankIndex, toFileIndex) {
+  let possibleKingPositions = [
+    [toRankIndex - 1, toFileIndex - 1],
+    [toRankIndex - 1, toFileIndex],
+    [toRankIndex - 1, toFileIndex + 1],
+    [toRankIndex, toFileIndex + 1],
+    [toRankIndex + 1, toFileIndex + 1],
+    [toRankIndex + 1, toFileIndex],
+    [toRankIndex + 1, toFileIndex - 1],
+    [toRankIndex, toFileIndex - 1],
+  ].filter(([rank, file]) => rank >= 0 && rank < 8 && file >= 0 && file < 8);
+
+  const possibleKings = possibleKingPositions.filter(
+    ([rank, file]) => chessBoard[rank][file] === white.King
+  );
+
+  if (possibleKings.length === 1) {
+    const loc = possibleKings[0];
+    chessBoard[loc[0]][loc[1]] = empty;
+    chessBoard[toRankIndex][toFileIndex] = white.King;
+    return { result: chessBoard };
+  } else if (!possibleKings.length) {
+    return {
+      error: `No queen can move there`,
+    };
+  } else {
+    return {
+      error: `${possibleKings.length} queens can move there`,
+    };
+  }
+}
