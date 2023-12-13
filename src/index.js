@@ -1,55 +1,22 @@
-import { getStartingChessBoard, makeMove } from "./engine.js";
-
 import "./chess-elements.js";
+import { getStartingChessBoard, makeMove } from "./chess-engine.js";
+import { renderChessBoard } from "./chess-render.js";
 
-function fileRow() {
-  let rowDiv = document.createElement("div");
-  rowDiv.classList.add("board-row");
-  " abcdefgh ".split("").forEach((letter) => {
-    let fileDiv = document.createElement("chess-square");
-    fileDiv.setAttribute("piece", letter);
-    fileDiv.classList.add("darker");
-    rowDiv.appendChild(fileDiv);
-  });
-  return rowDiv;
-}
-
-function getRankDiv(rank) {
-  let rankDiv = document.createElement("chess-square");
-  rankDiv.setAttribute("piece", rank);
-  rankDiv.classList.add("darker");
-  return rankDiv;
-}
-
-function renderChessBoard(root, chessBoard) {
-  const board = document.createElement("div");
-  board.classList.add("board");
-  board.appendChild(fileRow());
-  chessBoard.forEach((row, i) => {
-    const rowDiv = document.createElement("div");
-    rowDiv.classList.add("board-row");
-    rowDiv.appendChild(getRankDiv(i + 1));
-    row.forEach((cell, j) => {
-      const cellDiv = document.createElement("chess-square");
-      if ((i + j) % 2 == 0) {
-        cellDiv.classList.add("dark");
-      }
-      cellDiv.setAttribute("piece", cell);
-      rowDiv.appendChild(cellDiv);
-    });
-    rowDiv.appendChild(getRankDiv(i + 1));
-    board.appendChild(rowDiv);
-  });
-
-  board.appendChild(fileRow());
-  root.innerHTML = "";
-  root.appendChild(board);
-}
-
+// Dom setup
 const root = document.getElementById("root");
+function renderBoard(chessBoard) {
+  root.innerHTML = "";
+  root.appendChild(renderChessBoard(root, chessBoard));
+}
+
+// game
+const chessBoard = getStartingChessBoard();
+renderBoard(chessBoard);
+
+// Controls
 const labelElement = document.getElementById("move-label");
 const movesForm = document.getElementById("move-form");
-var currentTurn = new Proxy(
+const currentTurn = new Proxy(
   {
     color: "w",
     get isWhite() {
@@ -64,32 +31,43 @@ var currentTurn = new Proxy(
     },
   },
   {
-    set(target, prop, value) {
-      labelElement.innerText =
-        value === "w" ? "White to move" : "Black to move";
+    set(_, property, value) {
+      if (property === "color") {
+        labelElement.innerText =
+          value === "w" ? "White to move" : "Black to move";
+      }
       return Reflect.set(...arguments);
     },
   }
 );
 
-const chessBoard = getStartingChessBoard();
-renderChessBoard(root, chessBoard);
+const displayDiv = document.getElementById("display");
+const display = new Proxy(
+  {
+    content: "",
+  },
+  {
+    set(_, property, value) {
+      if (property === "content") {
+        displayDiv.innerText = value;
+      }
+      return Reflect.set(...arguments);
+    },
+  }
+);
 
 movesForm.addEventListener("submit", (e) => {
-  document.getElementById("display").innerText = "";
   e.preventDefault();
   const formData = new FormData(e.target);
+  const move = formData.get("move");
   e.target.reset();
-  const { error, result } = makeMove(
-    chessBoard,
-    formData.get("move"),
-    currentTurn.color
-  );
+  display.content = "";
+  const { error, result } = makeMove(chessBoard, move, currentTurn.color);
 
   if (error) {
-    document.getElementById("display").innerText = error;
+    display.content = error;
   } else {
-    renderChessBoard(root, result);
+    renderBoard(result);
     currentTurn.next();
   }
 });
