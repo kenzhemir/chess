@@ -1,7 +1,7 @@
+import { renderTheMessages } from "./chat-room.js";
 import "./chess-elements.js";
 import { getStartingChessBoard, makeMove } from "./chess-engine.js";
 import { renderChessBoard } from "./chess-render.js";
-import "./firebase.js";
 import { onGameSnapshot, pushMoveToFirebase } from "./firebase.js";
 
 window.app = {};
@@ -12,21 +12,27 @@ const roomForm = document.getElementById("room-selector-form");
 const gameDiv = document.getElementById("game");
 const boardDiv = document.getElementById("board");
 
+const chatRoomDiv = document.getElementById("chat-room");
+
 // room select
 roomForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const roomId = formData.get("roomId");
+  const name = formData.get("name");
   const color = formData.get("color");
   console.log({ roomId, color });
 
   window.app.myColor = color;
   window.app.roomId = roomId;
+  window.app.name = name;
   roomFormContainer.hidden = true;
   gameDiv.hidden = false;
+  chatRoomDiv.hidden = false;
   // game
   const unsub = onGameSnapshot(roomId, (game) => {
     renderTheGame(game);
+    renderTheMessages(game.messages ?? []);
   });
 });
 

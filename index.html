@@ -13,6 +13,7 @@
   <div id="wrapper">
     <div id="room-selector">
       <form id="room-selector-form">
+        <input name="name" placeholder="Your name">
         <input name="roomId" placeholder="Room id">
         <select name="color">
           <option value="b">♙ black</option>
@@ -32,6 +33,26 @@
       <br>
       <div id="board"></div>
     </div>
+  </div>
+  <div id="chat-room" hidden>
+    This is chat room:
+    <div id="messages"></div>
+    <form id="chat-form">
+      <input name="message" class="messages" placeholder="Enter your message" />
+      <input type="submit" hidden />
+    </form>
+    <style>
+      #messages {
+        border: 1px solid gray;
+        height: 400px;
+      }
+
+      .messages {
+        width: 100%;
+        height: 50px;
+        font-size: 1em;
+      }
+    </style>
   </div>
   <style>
     #room-selector-form {

@@ -36,3 +36,10 @@ export async function pushMoveToFirebase(gameId, move) {
   const game = await getDoc(gameRef);
   setDoc(gameRef, { moves: `${game.data().moves} ${move}` }, { merge: true });
 }
+
+export async function pushMessageToFirebase(gameId, message) {
+  const gameRef = doc(db, "games", gameId);
+  const game = await getDoc(gameRef);
+  const prevMessages = game.data()?.messages ?? [];
+  setDoc(gameRef, { messages: [...prevMessages, message] }, { merge: true });
+}
