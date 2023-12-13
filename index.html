@@ -9,18 +9,37 @@
 </head>
 
 <body>
-  <div id="wrapper">
-    <div id="display"></div>
-    <form id="move-form">
-      <label id="move-label">White to move</label>
-      <input name="move" placeholder="Enter move" />
-      <input type="submit" hidden />
-    </form>
-    <br>
-    <div id="root"></div>
 
+  <div id="wrapper">
+    <div id="room-selector">
+      <form id="room-selector-form">
+        <input name="roomId" placeholder="Room id">
+        <select name="color">
+          <option value="b">♙ black</option>
+          <option value="w">♟ white</option>
+        </select>
+        <input type="submit" />
+      </form>
+    </div>
+
+    <div id="game" hidden>
+      <div id="display"></div>
+      <form id="move-form">
+        <label id="move-label">White to move</label>
+        <input name="move" placeholder="Enter move" />
+        <input type="submit" hidden />
+      </form>
+      <br>
+      <div id="board"></div>
+    </div>
   </div>
   <style>
+    #room-selector-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
     #wrapper {
       width: max-content;
       margin: auto;
@@ -52,6 +71,7 @@
       display: block;
     }
   </style>
+
 </body>
 
 </html>
