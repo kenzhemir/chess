@@ -34,7 +34,11 @@ export function onGameSnapshot(gameId, cb) {
 export async function pushMoveToFirebase(gameId, move) {
   const gameRef = doc(db, "games", gameId);
   const game = await getDoc(gameRef);
-  setDoc(gameRef, { moves: `${game.data().moves} ${move}` }, { merge: true });
+  setDoc(
+    gameRef,
+    { moves: `${game.data().moves ?? ""} ${move}` },
+    { merge: true }
+  );
 }
 
 export async function pushMessageToFirebase(gameId, message) {

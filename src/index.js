@@ -32,7 +32,7 @@ roomForm.addEventListener("submit", async (e) => {
   // game
   const unsub = onGameSnapshot(roomId, (game) => {
     renderTheGame(game);
-    renderTheMessages(game.messages ?? []);
+    renderTheMessages(game?.messages ?? []);
   });
 });
 
@@ -78,7 +78,7 @@ function applyMoves(chessBoard, moves) {
 }
 
 function renderTheGame(game) {
-  const moves = game.moves.split(" ").filter(Boolean);
+  const moves = game?.moves?.split(" ").filter(Boolean) ?? [];
   const chessBoard = getStartingChessBoard();
   const { currentTurnColor } = applyMoves(chessBoard, moves);
   window.app.chessBoard = chessBoard;
