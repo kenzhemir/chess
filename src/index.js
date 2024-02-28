@@ -1,8 +1,7 @@
-import { renderTheMessages } from "./chat-room.js";
 import "./chess-elements.js";
 import { getStartingChessBoard, makeMove } from "./chess-engine.js";
 import { renderChessBoard } from "./chess-render.js";
-import { onGameSnapshot, pushMoveToFirebase } from "./firebase.js";
+import { pushMessage, subscribeToGameSnapshots } from "./mqtt.js";
 
 window.app = {};
 
@@ -30,10 +29,13 @@ roomForm.addEventListener("submit", async (e) => {
   gameDiv.hidden = false;
   chatRoomDiv.hidden = false;
   // game
-  const unsub = onGameSnapshot(roomId, (game) => {
+  const unsub = subscribeToGameSnapshots(roomId, (game) => {
+    window.app.moves = game;
     renderTheGame(game);
-    renderTheMessages(game?.messages ?? []);
+    // renderTheMessages(game?.messages ?? []);
   });
+  
+  renderTheGame("");
 });
 
 function renderBoard(chessBoard) {
@@ -78,7 +80,7 @@ function applyMoves(chessBoard, moves) {
 }
 
 function renderTheGame(game) {
-  const moves = game?.moves?.split(" ").filter(Boolean) ?? [];
+  const moves = game?.split(" ").filter(Boolean) ?? [];
   const chessBoard = getStartingChessBoard();
   const { currentTurnColor } = applyMoves(chessBoard, moves);
   window.app.chessBoard = chessBoard;
@@ -101,6 +103,6 @@ movesForm.addEventListener("submit", (e) => {
   if (error) {
     display.content = error;
   } else {
-    pushMoveToFirebase(window.app.roomId, move);
+    pushMessage(window.app.roomId, `${window.app.moves ?? ""} ${move}`);
   }
 });
